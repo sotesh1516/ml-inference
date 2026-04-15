@@ -1,1 +1,12 @@
-protos/note.txt
+#python bytecode cache folderswhat 
+__pycache__/
+*.py[cod]
+*$py.class
+
+#all venv's ending in _venv
+*_venv/
+#anything containing venv 
+*venv*/
+
+#any file with the ".notes" extension
+*.notes
