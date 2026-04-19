@@ -1,3 +1,5 @@
 torch
 torchvision
 PIL
+grpcio
+grpcio-tools
