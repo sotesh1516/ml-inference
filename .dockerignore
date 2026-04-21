@@ -1,0 +1,6 @@
+.env
+*.pyc
+__pycache__
+
+#reproducible artifacts
+protobuf_generated/ 

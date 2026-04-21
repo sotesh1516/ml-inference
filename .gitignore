@@ -16,3 +16,6 @@ protobuf_generated/
 
 #any file with the ".notes" extension
 *.notes
+
+#env files
+.env
