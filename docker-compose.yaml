@@ -1,0 +1,12 @@
+services:
+  gateway:
+    build: .
+    ports:
+      - "${APP_PORT}:5000"
+    environment:
+      - name=value
+  
+  inference_worker:
+    build: .
+    ports: 
+      - 
