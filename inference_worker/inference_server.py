@@ -1,6 +1,7 @@
 import grpc
 from concurrent import futures
-from ..protobuf_generated import inference_pb2_grpc, inference_pb2
+from protobuf_generated.inference import inference_pb2_grpc, inference_pb2
+from .model_server import model_predict
 
 
 class InferenceServicer(inference_pb2_grpc.InferenceServicer):
@@ -14,7 +15,8 @@ class InferenceServicer(inference_pb2_grpc.InferenceServicer):
     ) -> inference_pb2.PredictResponse:
         image_bytes = request.image
 
-        return super().Predict(request, context)
+        prediction = model_predict(image_bytes)
+        return inference_pb2.PredictResponse(output=prediction)
 
 
 """
@@ -29,4 +31,8 @@ def serve():
     inference_pb2_grpc.add_InferenceServicer_to_server(InferenceServicer(), server)
     server.add_insecure_port("[::]:50051")
     server.start()
+    print("Server started on port 50051...")
     server.wait_for_termination()
+
+if __name__ == "__main__":
+    serve()
