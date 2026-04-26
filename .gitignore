@@ -7,7 +7,6 @@ __pycache__/
 *_pb2.py
 *_pb2_grpc.py
 *_pb2.pyi
-protobuf_generated/
 
 #all venv's ending in _venv
 *_venv/
