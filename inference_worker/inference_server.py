@@ -14,9 +14,11 @@ class InferenceServicer(inference_pb2_grpc.InferenceServicer):
         self, request: inference_pb2.PredictRequest, context: grpc.ServicerContext
     ) -> inference_pb2.PredictResponse:
         image_bytes = request.image
-
         prediction = model_predict(image_bytes)
-        return inference_pb2.PredictResponse(output=prediction)
+        print(f"Prediction from model: {prediction[:5]}...")  # Print first 5 values for brevity
+        response = inference_pb2.PredictResponse(output=prediction)
+        # response.output.extend(prediction)  # since PredictResponse is a pre-allocated C based structure
+        return response
 
 
 """
