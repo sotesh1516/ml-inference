@@ -15,9 +15,11 @@ class InferenceClient:
 
     def predict(self, input_data: bytes):
         request = inference_pb2.PredictRequest(image=input_data)
-        response = self.stub.Predict(request)
-        print(f"Received prediction: {response.output}")
-        return response.output
+        rpc_response = self.stub.Predict(request)
+        response_list = list(rpc_response.output)
+        prediction_index = response_list.index(max(response_list))
+        print(prediction_index)
+        return prediction_index
 
 
 if __name__ == "__main__":

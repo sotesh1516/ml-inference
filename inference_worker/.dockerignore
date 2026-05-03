@@ -1,0 +1,4 @@
+inference_worker_venv/
+.git/
+__pycache__/
+.env

@@ -1,6 +1,11 @@
 .env
 *.pyc
-__pycache__
+__pycache__/
 
-#reproducible artifacts
-protobuf_generated/ 
+# Ignore the local generated inference artifacts
+protobuf_generated/inference/inference_pb2.py
+protobuf_generated/inference/inference_pb2_grpc.py
+protobuf_generated/inference/inference_pb2.pyi
+
+#Ignore the virtual environment
+inference_worker_venv/
