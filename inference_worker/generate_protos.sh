@@ -16,4 +16,4 @@ fi
 
 
 # Generate the gRPC code
-python -m grpc_tools.protoc -I. --python_out="$OUTPUT_DIR" --grpc_python_out="$OUTPUT_DIR" "$PROTO_FILE"
+python -m grpc_tools.protoc -I"$PROTO_ROOT" --python_out="$OUTPUT_DIR" --grpc_python_out="$OUTPUT_DIR" "$PROTO_FILE"
