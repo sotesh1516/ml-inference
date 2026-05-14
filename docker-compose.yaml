@@ -2,11 +2,13 @@ name: ml-inference
 
 services:
   gateway:
-    build: ./gateway
-    env_file:
-      - ./gateway/.env  # Explicitly pointing to the subfolder
+    build: 
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    depends_on: #need to replace with healthcheck in the future
+      - inference_worker
     ports:
-      - "${APP_PORT}:5000"
+      - "${GATEWAY_APP_PORT}:5000"
   
   inference_worker:
     build: 
@@ -14,3 +16,8 @@ services:
       dockerfile: ./inference_worker/Dockerfile
     ports: 
       - "${GRPC_SERVER_PORT}:50051"
+  
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

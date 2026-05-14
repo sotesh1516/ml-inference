@@ -9,12 +9,14 @@ COPY ./inference_worker/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./inference_worker ./inference_worker
+copy ./models ./models
 COPY ./protobuf_generated/inference ./protobuf_generated/inference
+COPY ./protobuf_generated/generate_protos.sh ./protobuf_generated/generate_protos.sh
 
 # This will print the entire structure of the /app folder to the build logs
 RUN echo "--- DEPLOYMENT TREE ---" && find /app -maxdepth 3 -not -path '*/.*'
 
-RUN bash ./inference_worker/generate_protos.sh
+RUN bash ./protobuf_generated/generate_protos.sh
 
 #Stage 2: Runtime
 FROM python:3.11-slim AS runtime
