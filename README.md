@@ -32,15 +32,10 @@ pip install -r requirements.txt
 
 Note: Run protobuf generation from project root.
 
---...=. defines the current directory as the base directory for imports in the generated files
+-I=. defines the current directory as the base directory for imports in the generated files
 
 ```bash
-python -m grpc_tools.protoc \
-  -I. \
-  --python_out=. \
-  --grpc_python_out=. \
-  --pyi_out=. \
-  ./protobuf_generated/inference/inference.proto
+python -m grpc_tools.protoc -I. --python_out=./protobuf_generated/inference/ --grpc_python_out=./protobuf_generated/inference/ --pyi_out=./protobuf_generated/inference/ ./protobuf_generated/inference/inference.proto 
 ```
 
 ---
@@ -56,7 +51,7 @@ python grpc_server.py
 
 ### Gateway
 
-#### Setup Pyhon environment and packages
+#### Setup Python environment and packages
 
 ```bash
 cd gateway

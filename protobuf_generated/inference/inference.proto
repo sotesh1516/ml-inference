@@ -2,13 +2,19 @@ syntax = "proto3"; //language version
 
 package ml.inference.v1; //for namespacing and organization, to avoid conflicts due to Predict...
 
-service Inference {
+import "google/protobuf/empty.proto";
+
+service InferenceProducer {
     //define rpc methods using the req and res types
     rpc Predict(PredictRequest) returns (PredictResponse) {}
 
+}
 
-
-
+service InferenceConsumer {
+    //function to get the task from a queue
+    rpc GetTaskFromQueue(google.protobuf.Empty) returns (stream InferenceTask) {}
+    //function to submit result back to the client
+    rpc ReturnTask(google.protobuf.Empty) returns (stream InferenceResult) {}
 }
 
 message PredictRequest {
@@ -17,4 +23,14 @@ message PredictRequest {
 
 message PredictResponse {
     repeated float output = 1;
+}
+
+message InferenceTask {
+    string task_id = 1;
+    bytes payload = 2;
+}
+
+message InferenceResult {
+    string task_id = 1;
+    bytes output = 2;
 }
