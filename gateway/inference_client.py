@@ -11,7 +11,7 @@ calls into binary network packets. Just use it.
 class InferenceClient:
     def __init__(self, host='localhost', port=50051):
         self.channel = grpc.insecure_channel(f"{host}:{port}")
-        self.stub = inference_pb2_grpc.InferenceStub(self.channel)
+        self.stub = inference_pb2_grpc.InferenceProducerStub(self.channel)
 
     def predict(self, input_data: bytes):
         request = inference_pb2.PredictRequest(image=input_data)

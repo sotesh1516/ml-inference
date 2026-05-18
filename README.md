@@ -1,10 +1,8 @@
 # ML Inference System
 
-This project consists of:
-    - a REST API gateway
-    - a gRPC-based inference service
+This project consists of: - a REST API gateway - a gRPC-based inference service
 
-Each application runs its Python virtual environment for modularity. 
+Each application runs its Python virtual environment for modularity.
 
 ---
 
@@ -35,7 +33,7 @@ Note: Run protobuf generation from project root.
 -I=. defines the current directory as the base directory for imports in the generated files
 
 ```bash
-python -m grpc_tools.protoc -I. --python_out=./protobuf_generated/inference/ --grpc_python_out=./protobuf_generated/inference/ --pyi_out=./protobuf_generated/inference/ ./protobuf_generated/inference/inference.proto 
+python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. --pyi_out=. ./protobuf_generated/inference/inference.proto
 ```
 
 ---

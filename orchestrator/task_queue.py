@@ -1,6 +1,6 @@
 import asyncio
 
-from .schemas.inference_request import InferenceRequest
+from models.schemas.inference_request import InferenceRequest
 
 '''
 TaskQueue is a simple wrapper around asyncio.Queue to manage inference tasks in the Inference Worker.

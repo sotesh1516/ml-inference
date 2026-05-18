@@ -6,7 +6,7 @@ from concurrent import futures
 from protobuf_generated.inference import inference_pb2_grpc, inference_pb2
 from .model_server import model_predict
 from .task_queue import TaskQueue
-from ..models.schemas.inference_request import InferenceRequest
+from models.schemas.inference_request import InferenceRequest
 
 
 class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
@@ -18,6 +18,7 @@ class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
     def __init__(self, task_queue: TaskQueue):
         super().__init__()
         self.task_queue = task_queue
+        self.task_mapping = {}  
 
     async def Predict(
         self, request: inference_pb2.PredictRequest, context: grpc.aio.ServicerContext
@@ -27,11 +28,12 @@ class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
         # creat an inference request object and add it to the task queue for processing by the worker
         task_future = asyncio.Future()
         id = str(uuid.uuid4())
+        self.task_mapping[id] = task_future
         inference_request = InferenceRequest(
-            image=image_bytes, future=task_future, uuid=id
+            image=image_bytes, uuid=id
         )
         self.task_queue.add_task(inference_request)
-
+        print(f"Added task with id {id} to the queue. Queue size is now {self.task_queue.size()}.")
         prediction = await task_future
         # prediction = model_predict(image_bytes)
         print(
@@ -47,9 +49,14 @@ class InferenceConsumerServicer(inference_pb2_grpc.InferenceConsumerServicer):
         self.task_queue = task_queue
         self.task_mapping = {}  # quick lookup for task_id to future mapping
 
+    """
+    Maintain a long lived http/2 connection with api gateway
+    """
     async def GetTaskFromQueue(
         self, context: grpc.aio.ServicerContext
-    ) -> AsyncGenerator[inference_pb2.InferenceTask, None]: #ensures the yield inside the loop is the return mechanism
+    ) -> AsyncGenerator[
+        inference_pb2.InferenceTask, None
+    ]:  # ensures the yield inside the loop is the return mechanism
         while True:
 
             if context.cancelled():
@@ -67,6 +74,24 @@ class InferenceConsumerServicer(inference_pb2_grpc.InferenceConsumerServicer):
                 )
                 yield inference_task
 
+    """
+    Inference worker(ml model) makes a post request to this endpoint with the inference result
+    """
+    async def ReturnTask(
+        self, request: inference_pb2.InferenceResult, context: grpc.aio.ServicerContext
+    ):
+        task_id = request.task_id
+        prediction = request.output
+        if task_id in self.task_mapping:
+            future = self.task_mapping[task_id]
+            future.set_result(prediction)  
+            del self.task_mapping[task_id] 
+        else:
+            print(f"Received result for unknown task_id: {task_id}")
+        # return inference_pb2.Empty()
+
+
+
 
 """
 start up a gRPC server for clients to use the service
@@ -77,6 +102,7 @@ gRPC.server takes in futures.ThreadPoolExecutor, a high-level interface for asyn
 
 def serve():
     queue = TaskQueue()
+    # this needs to change from grpc.server to grpc.aio.server to support async functions in the servicer
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     inference_pb2_grpc.add_InferenceProducerServicer_to_server(
         InferenceProducerServicer(queue), server

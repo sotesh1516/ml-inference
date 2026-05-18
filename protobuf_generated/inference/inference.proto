@@ -14,7 +14,7 @@ service InferenceConsumer {
     //function to get the task from a queue
     rpc GetTaskFromQueue(google.protobuf.Empty) returns (stream InferenceTask) {}
     //function to submit result back to the client
-    rpc ReturnTask(google.protobuf.Empty) returns (stream InferenceResult) {}
+    rpc ReturnTask(InferenceResult) returns (google.protobuf.Empty) {}
 }
 
 message PredictRequest {
