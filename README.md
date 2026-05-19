@@ -64,5 +64,5 @@ pip install -r requirements.txt
 
 ```bash
 source gateway_venv/bin/activate
-python app.py
+uvicorn gateway.app:app --reload
 ```

@@ -15,10 +15,10 @@ class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
     context: information about RPC environment and control its lifecycle. It represents the life of a single RPC call, one client, one call, one context.
     """
 
-    def __init__(self, task_queue: TaskQueue):
+    def __init__(self, task_queue: TaskQueue, task_mapping: dict):
         super().__init__()
         self.task_queue = task_queue
-        self.task_mapping = {}  
+        self.task_mapping = task_mapping  
 
     async def Predict(
         self, request: inference_pb2.PredictRequest, context: grpc.aio.ServicerContext
@@ -32,8 +32,10 @@ class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
         inference_request = InferenceRequest(
             image=image_bytes, uuid=id
         )
-        self.task_queue.add_task(inference_request)
+        await self.task_queue.add_task(inference_request)
         print(f"Added task with id {id} to the queue. Queue size is now {self.task_queue.size()}.")
+        single_task = await self.task_queue.get_task()
+        print(single_task.uuid)
         prediction = await task_future
         # prediction = model_predict(image_bytes)
         print(
@@ -44,10 +46,10 @@ class InferenceProducerServicer(inference_pb2_grpc.InferenceProducerServicer):
 
 
 class InferenceConsumerServicer(inference_pb2_grpc.InferenceConsumerServicer):
-    def __init__(self, task_queue: TaskQueue):
+    def __init__(self, task_queue: TaskQueue, task_mapping: dict):
         super().__init__()
         self.task_queue = task_queue
-        self.task_mapping = {}  # quick lookup for task_id to future mapping
+        self.task_mapping = task_mapping
 
     """
     Maintain a long lived http/2 connection with api gateway
@@ -88,7 +90,7 @@ class InferenceConsumerServicer(inference_pb2_grpc.InferenceConsumerServicer):
             del self.task_mapping[task_id] 
         else:
             print(f"Received result for unknown task_id: {task_id}")
-        # return inference_pb2.Empty()
+
 
 
 
@@ -100,18 +102,21 @@ gRPC.server takes in futures.ThreadPoolExecutor, a high-level interface for asyn
 """
 
 
-def serve():
+async def serve():
     queue = TaskQueue()
-    # this needs to change from grpc.server to grpc.aio.server to support async functions in the servicer
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    task_mapping = {} 
+    server = grpc.aio.server()
     inference_pb2_grpc.add_InferenceProducerServicer_to_server(
-        InferenceProducerServicer(queue), server
+        InferenceProducerServicer(queue, task_mapping), server
+    )
+    inference_pb2_grpc.add_InferenceConsumerServicer_to_server(
+        InferenceConsumerServicer(queue, task_mapping), server
     )
     server.add_insecure_port("[::]:50051")
-    server.start()
+    await server.start()
     print("Server started on port 50051...")
-    server.wait_for_termination()
+    await server.wait_for_termination()
 
 
 if __name__ == "__main__":
-    serve()
+    asyncio.run(serve())

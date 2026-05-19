@@ -15,5 +15,5 @@ def run_server():
 @app.post("/predict")
 async def predict(image: UploadFile = File(...)):
     contents = await image.read()
-    prediction_index = grpc_client.predict(contents)
+    prediction_index = await grpc_client.predict(contents)
     return {"prediction_index": prediction_index}
